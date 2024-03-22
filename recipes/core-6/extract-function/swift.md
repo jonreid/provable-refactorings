@@ -23,27 +23,12 @@ Surround the code you want to extract with:
 
 ```swift
 let closure: () -> Void = {
-    ...your code here...
+    // ...your code here
 }
 closure()
 ```
 
-Compile. Possible errors:
-
-* `not all control paths return a value`. You have an early return. Back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or extract something different.
-* `a break/continue statement may only be used within ...`.  You have a break/continue. Back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or extract something different. 
-
-Search the new closure for any return statements (using find). If there are any returns:
-
-If it's obvious that all code paths return, then add a `return` before the closure:
-
-```cpp
-return [&]() { 
-    //...
-}();
-```
-
-If it's not obvious that all code paths return, then back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or try something different.
+Compile.
 
 ## 2. Move closure to outer scope
 
@@ -55,13 +40,13 @@ Otherwise, notice the first variable that doesn't compile and go to the next ste
 
 ## 3. Convert variable to parameter
 
-Assume we have a variable applesauce that did not compile at outer scope.
+Assume we have a variable `applesauce` that did not compile at outer scope.
 
-Add variable to method signature and call it:
+Add a parameter to the closure signature and pass it in at the call site:
 
 ```swift
 let closure: (_ applesauce: Type) -> Void = { applesauce in
-    ...your code here...
+    // ...your code here
 }
 closure(applesauce)
 ```
@@ -77,7 +62,7 @@ We are starting with:
 
 ```swift
 let closure: (_ applesauce: Type) -> Void = { applesauce in
-    ...your code here...
+    // ...your code here
 }
 closure(applesauce)
 ```
@@ -85,12 +70,12 @@ closure(applesauce)
 Step 1: Allow input to be mutated
 
 Swift does not allow input parameters to be mutated.
-Here, we are changing the input name and reassigning it to a `var` on the first line.
+Here, we are changing the parameter name and reassigning it to a `var` on the first line.
 
 ```swift
 let closure: (_ applesauce: Type) -> Void = { applesauceIn in
     var applesauce = appleSauceIn
-    ...your code here...
+    // ...your code here
 }
 closure(applesauce)
 ```
@@ -99,14 +84,14 @@ Step 2: Return and capture
 
 We are going to:
 
-1. Change the return type of the closure from Void to Type
+1. Change the return type of the closure from `Void` to `Type`
 1. Add a return statement at the end of the closure
-1. Capture the return at the call site
+1. Capture the returned value at the call site
 
 ```swift
 let closure: (_ applesauce: Type) -> Type = { applesauceIn in
     var applesauce = appleSauceIn
-    ...your code here...
+    // ...your code here
     return applesauce
 }
 applesauce = closure(applesauce)
@@ -120,40 +105,40 @@ We are starting with:
 ```swift
 let closure: (_ applesauce1In: Type1, _ applesauce2: Type2) -> Type1 = { applesauce1In, applesauce2 in
     var applesauce1 = appleSauce1In
-    ...your code here...
+    // ...your code here
     return applesauce1
 }
-applesauce1 = closure(applesauce1, applesauce2)
+applesauce1 = closure(applesauce1)
 ```
 
 Step 1: Allow input to be mutated
 
 Swift does not allow input parameters to be mutated.
-Here, we are changing the input name and reassigning it to a `var` on the first line.
+Here, we are changing the input name and reassigning it to a `var` on the second line.
 
 ```swift
 let closure: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> Type1 = { applesauce1In, applesauce2In in
     var applesauce1 = appleSauce1In
     var applesauce2 = appleSauce2In
-    ...your code here...
+    // ...your code here
     return applesauce1
 }
-applesauce1 = closure(applesauce1, applesauce2)
+applesauce1 = closure(applesauce1)
 ```
 
 Step 2: Return and capture
 
 We are going to:
 
-1. Change the return type of the closure from Type1 to a tuple of (Type1, Type2)
-1. Change the return to a tuple of both
-1. Capture and deconstruct return at the call site
+1. Change the return type of the closure from `Type1` to a tuple of `(Type1, Type2)`
+1. Change the return to a tuple of both values
+1. Capture and deconstruct the return values at the call site
 
 ```swift
 let closure: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> (Type1, Type2) = { applesauce1In, applesauce2In in
     var applesauce1 = appleSauce1In
     var applesauce2 = appleSauce2In
-    ...your code here...
+    // ...your code here
     return (applesauce1, applesauce2)
 }
 (applesauce1, applesauce2) = closure(applesauce1, applesauce2)
