@@ -21,11 +21,11 @@ graph TD;
 
 Surround the code you want to extract with:
 
-```diff
-+ let closure: () -> Void = {
+```swift
+let closure: () -> Void = {
     // ...your code here
-+ }
-+ closure()
+}
+closure()
 ```
 
 Compile.
