@@ -4,28 +4,28 @@
 
 ```mermaid
 graph TD;
-    Extract_Function["Extract Function"] --> Introduce_lambda["Introduce a lambda"];
-    Introduce_lambda --> Move_lambda_to_outer_scope;
-    Move_lambda_to_outer_scope --> |It compiles| Convert_to_function;
-    Move_lambda_to_outer_scope --> |It does not compile| Notice_first_variable_that_doesnot_compile;
-    Notice_first_variable_that_doesnot_compile --> Move_lambda_back_to_inner_scope;
-    Move_lambda_back_to_inner_scope --> Convert_variable_to_parameter;
-    Convert_variable_to_parameter --> |It compiles| Move_lambda_to_outer_scope;
+    Extract_Function["Extract Function"] --> Introduce_closure["Introduce a closure"];
+    Introduce_closure --> Move_closure_to_outer_scope["Move closure to outer scope"];
+    Move_closure_to_outer_scope --> |It compiles| Convert_to_function["Convert to function"];
+    Move_closure_to_outer_scope --> |It does not compile| Notice_first_variable_that_doesnot_compile["Notice first variable that does not compile"];
+    Notice_first_variable_that_doesnot_compile --> Move_closure_back_to_inner_scope["Move closure back to inner scope"];
+    Move_closure_back_to_inner_scope --> Convert_variable_to_parameter["Convert variable to parameter"];
+    Convert_variable_to_parameter --> |It compiles| Move_closure_to_outer_scope;
     Convert_variable_to_parameter --> |It does not compile| Add_return_clause;
-    Add_return_clause --> Move_lambda_to_outer_scope;
+    Add_return_clause --> Move_closure_to_outer_scope;
 ```
 
 # Recipe
 
-## 1. Introduce a lambda
+## 1. Introduce a closure
 
 Surround the code you want to extract with:
 
 ```swift
-let lambda: () -> Void = {
+let closure: () -> Void = {
     ...your code here...
 }
-lambda()
+closure()
 ```
 
 Compile. Possible errors:
@@ -33,9 +33,9 @@ Compile. Possible errors:
 * `not all control paths return a value`. You have an early return. Back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or extract something different.
 * `a break/continue statement may only be used within ...`.  You have a break/continue. Back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or extract something different. 
 
-Search the new lambda for any return statements (using find). If there are any returns:
+Search the new closure for any return statements (using find). If there are any returns:
 
-If it's obvious that all code paths return, then add a `return` before the lambda:
+If it's obvious that all code paths return, then add a `return` before the closure:
 
 ```cpp
 return [&]() { 
@@ -45,9 +45,9 @@ return [&]() {
 
 If it's not obvious that all code paths return, then back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or try something different.
 
-## 2. Move Lamda to Outer Scope
+## 2. Move closure to outer scope
 
-Select the lambda declaration, cut it, and paste it outside.
+Select the closure declaration, cut it, and paste it outside.
 
 If it compiles, go to step ??? Convert to Function.
 
@@ -60,15 +60,15 @@ Assume we have a variable applesauce that did not compile at outer scope.
 Add variable to method signature and call it:
 
 ```swift
-let lambda: (_ applesauce: Type) -> Void = { applesauce in
+let closure: (_ applesauce: Type) -> Void = { applesauce in
     ...your code here...
 }
-lambda(applesauce)
+closure(applesauce)
 ```
 
 If this does not compile, go to step 4, Add return clause.
 
-Otherwise, go to step 2, Move Lamda to Outer Scope.
+Otherwise, go to step 2, Move closure to outer scope.
 
 ## 4.1 Add first return clause
 
@@ -76,10 +76,10 @@ In this situation, when we added the variable, the compiler complained that we w
 We are starting with:
 
 ```swift
-let lambda: (_ applesauce: Type) -> Void = { applesauce in
+let closure: (_ applesauce: Type) -> Void = { applesauce in
     ...your code here...
 }
-lambda(applesauce)
+closure(applesauce)
 ```
 
 Step 1: Allow input to be mutated
@@ -88,28 +88,28 @@ Swift does not allow input parameters to be mutated.
 Here, we are changing the input name and reassigning it to a `var` on the first line.
 
 ```swift
-let lambda: (_ applesauce: Type) -> Void = { applesauceIn in
+let closure: (_ applesauce: Type) -> Void = { applesauceIn in
     var applesauce = appleSauceIn
     ...your code here...
 }
-lambda(applesauce)
+closure(applesauce)
 ```
 
 Step 2: Return and capture
 
 We are going to:
 
-1. Change the return type of the lambda from Void to Type
-1. Add a return statement at the end of the lambda
+1. Change the return type of the closure from Void to Type
+1. Add a return statement at the end of the closure
 1. Capture the return at the call site
 
 ```swift
-let lambda: (_ applesauce: Type) -> Type = { applesauceIn in
+let closure: (_ applesauce: Type) -> Type = { applesauceIn in
     var applesauce = appleSauceIn
     ...your code here...
     return applesauce
 }
-applesauce = lambda(applesauce)
+applesauce = closure(applesauce)
 ```
 
 ## 4.2 Add second return clause
@@ -118,12 +118,12 @@ In this situation, when we added the variable, the compiler complained that we w
 We are starting with:
 
 ```swift
-let lambda: (_ applesauce1In: Type1, _ applesauce2: Type2) -> Type1 = { applesauce1In, applesauce2 in
+let closure: (_ applesauce1In: Type1, _ applesauce2: Type2) -> Type1 = { applesauce1In, applesauce2 in
     var applesauce1 = appleSauce1In
     ...your code here...
     return applesauce1
 }
-applesauce1 = lambda(applesauce1, applesauce2)
+applesauce1 = closure(applesauce1, applesauce2)
 ```
 
 Step 1: Allow input to be mutated
@@ -132,31 +132,31 @@ Swift does not allow input parameters to be mutated.
 Here, we are changing the input name and reassigning it to a `var` on the first line.
 
 ```swift
-let lambda: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> Type1 = { applesauce1In, applesauce2In in
+let closure: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> Type1 = { applesauce1In, applesauce2In in
     var applesauce1 = appleSauce1In
     var applesauce2 = appleSauce2In
     ...your code here...
     return applesauce1
 }
-applesauce1 = lambda(applesauce1, applesauce2)
+applesauce1 = closure(applesauce1, applesauce2)
 ```
 
 Step 2: Return and capture
 
 We are going to:
 
-1. Change the return type of the lambda from Type1 to a tuple of (Type1, Type2)
+1. Change the return type of the closure from Type1 to a tuple of (Type1, Type2)
 1. Change the return to a tuple of both
 1. Capture and deconstruct return at the call site
 
 ```swift
-let lambda: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> (Type1, Type2) = { applesauce1In, applesauce2In in
+let closure: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> (Type1, Type2) = { applesauce1In, applesauce2In in
     var applesauce1 = appleSauce1In
     var applesauce2 = appleSauce2In
     ...your code here...
     return (applesauce1, applesauce2)
 }
-(applesauce1, applesauce2) = lambda(applesauce1, applesauce2)
+(applesauce1, applesauce2) = closure(applesauce1, applesauce2)
 ```
 
 
@@ -215,7 +215,7 @@ For each argument:
 
 1. Go-to-definiton on the argument
 2. Copy the variable type
-3. Paste into the lambda parameter list
+3. Paste into the closure parameter list
 4. Compile
 
 For example,
@@ -284,14 +284,14 @@ auto Applesauce = []() -> void {
 };
 ```
 
-## 8. Convert lambda to function
+## 8. Convert closure to function
 
 * If `this` is captured, use 8A.
 * If `this` is not captured, use 8B.
 
-### 8A. Convert `this`-bound lambda to member function
+### 8A. Convert `this`-bound closure to member function
 
-1. Cut the lambda statement and paste it outside the current function.
+1. Cut the closure statement and paste it outside the current function.
 2. Remove `= [this]`.
 3. Mark the new method as `const`.
 4. Copy the signature line.
@@ -313,9 +313,9 @@ auto SomeClass::Applesauce () const -> void {
 };
 ```
 
-### 8B. Convert non-`this` Lambda to free function
+### 8B. Convert non-`this` closure to free function
 
-1. Cut the lambda statement and paste it above the current function.
+1. Cut the closure statement and paste it above the current function.
 2. Remove `= []`
 3. Wrap it in an anonymous namespace
 4. Compile and resolve any errors:
@@ -331,7 +331,7 @@ auto Applesauce () -> void {
 }
 ```
 
-### 9. Convert return value from lambda-like syntax to traditional syntax
+### 9. Convert return value from closure-like syntax to traditional syntax
  1. Select the return value (after the `->`) and cut it.
 2. Delete the `->`
 3. Select the word `auto` and paste the return value over it.
