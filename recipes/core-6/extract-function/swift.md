@@ -53,7 +53,7 @@ closure(applesauce)
 
 If this does not compile, go to step 4, Add return statement.
 
-Otherwise, go to [step 2, Move closure to outer scope](#2-move-closure-to-outer-scope).
+Otherwise, go to step 2, [Move closure to outer scope](#2-move-closure-to-outer-scope).
 
 ## 4.1 Add first return statement
 
@@ -97,7 +97,7 @@ let closure: (_ applesauce: Type) -> Type = { applesauceIn in
 applesauce = closure(applesauce)
 ```
 
-Now return [step 2, Move closure to outer scope](#2-move-closure-to-outer-scope).
+Now return step 2, [Move closure to outer scope](#2-move-closure-to-outer-scope).
 
 ## 4.2 Add second return statement
 
@@ -146,5 +146,5 @@ let closure: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> (Type1, Type2) 
 (applesauce1, applesauce2) = closure(applesauce1, applesauce2)
 ```
 
-Now return [step 2, Move closure to outer scope)(#2-move-closure-to-outer-scope).
+Now return step 2, [Move closure to outer scope](#2-move-closure-to-outer-scope).
 
