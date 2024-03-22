@@ -5,14 +5,14 @@
 ```mermaid
 graph TD;
     Extract_Function["Extract Function"] --> Introduce_closure["Introduce a closure"];
-    Introduce_closure --> Move_closure_to_outer_scope["Move closure to outer scope"];
-    Move_closure_to_outer_scope --> |It compiles| Convert_to_function["Convert to function"];
-    Move_closure_to_outer_scope --> |It does not compile| Notice_first_variable_that_doesnot_compile["Notice first variable that does not compile"];
-    Notice_first_variable_that_doesnot_compile --> Move_closure_back_to_inner_scope["Move closure back to inner scope"];
-    Move_closure_back_to_inner_scope --> Convert_variable_to_parameter["Convert variable to parameter"];
-    Convert_variable_to_parameter --> |It compiles| Move_closure_to_outer_scope;
-    Convert_variable_to_parameter --> |It does not compile| Add_return_clause;
-    Add_return_clause --> Move_closure_to_outer_scope;
+    Introduce_closure --> Move_closure_out["Move closure to outer scope"];
+    Move_closure_out --> |It compiles| Convert_to_function["Convert to function"];
+    Move_closure_out --> |It does not compile| Notice_first_variable_error["Notice first variable that does not compile"];
+    Notice_first_variable_error --> Move_closure_in["Move closure back to inner scope"];
+    Move_closure_in --> Convert_variable_to_parameter["Convert variable to parameter"];
+    Convert_variable_to_parameter --> |It compiles| Move_closure_out;
+    Convert_variable_to_parameter --> |It does not compile| Add_return_clause["Add return statement"];
+    Add_return_clause --> Move_closure_out;
 ```
 
 # Recipe
