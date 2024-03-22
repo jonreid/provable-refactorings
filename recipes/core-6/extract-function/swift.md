@@ -9,43 +9,26 @@ graph TD;
     Move_lambda_to_outer_scope --> |It compiles| Convert_to_function;
     Move_lambda_to_outer_scope --> |It does not compile| Notice_first_variable_that_doesnot_compile;
     Notice_first_variable_that_doesnot_compile --> Move_lambda_back_to_inner_scope;
-    Move_lambda_back_to_inner_scope --> Introduce_variable;
-    Introduce_variable --> |It compiles| Move_lambda_to_outer_scope;
-    Introduce_variable --> |It does not compile| Add_return_clause;
+    Move_lambda_back_to_inner_scope --> Convert_variable_to_parameter;
+    Convert_variable_to_parameter --> |It compiles| Move_lambda_to_outer_scope;
+    Convert_variable_to_parameter --> |It does not compile| Add_return_clause;
     Add_return_clause --> Move_lambda_to_outer_scope;
 ```
-
-If you get to the end of step 1, the refactoring is possible - it will produce a valid result.
-
-This recipe is designed to do Extract Function and nothing else. If you want something else, there are other refactorings for that.
-
-You can commit at the end of any numbered step. At each such point, the code will compile and produce exactly the same results as the original code.
-
-# Constraints
-
-This recipe only works on rvalue expressions or on whole blocks (surrounded by braces) or a single for/while/if statement. It does not work on single statements, due to variable lifetime changes. If you need to extract statements but not a block, first execute the Extract Block refactoring
 
 # Recipe
 
 ## 1. Introduce a lambda
 
-For a block/for/while/if, surround with:
- 
-```cpp
-[&]() {
-    // ...
-}();
+Surround the code you want to extract with:
+
+```swift
+let lambda: () -> Void = {
+    ...your code here...
+}
+lambda()
 ```
 
-For an expression, surround it with:
-
-```cpp
-[&]() { return
-    // ...
-;}()
-```
-
-Compile single file. Possible errors:
+Compile. Possible errors:
 
 * `not all control paths return a value`. You have an early return. Back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or extract something different.
 * `a break/continue statement may only be used within ...`.  You have a break/continue. Back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or extract something different. 
@@ -62,39 +45,122 @@ return [&]() {
 
 If it's not obvious that all code paths return, then back up and either [Eliminate Early Return/Continue/Break (fix link)](#) or try something different.
 
-## 2. Extract Variable
+## 2. Move Lamda to Outer Scope
 
-1. Assign the lambda to `Applesauce` and call it.  ([Extract Variable](/recipes/core-6/extract-variable/cpp.md))
+Select the lambda declaration, cut it, and paste it outside.
 
-For example,
+If it compiles, go to step ??? Convert to Function.
 
-```cpp
-[&]() { 
-    // ...
-}();
+Otherwise, notice the first variable that doesn't compile and go to the next step.
+
+## 3. Convert variable to parameter
+
+Assume we have a variable applesauce that did not compile at outer scope.
+
+Add variable to method signature and call it:
+
+```swift
+let lambda: (_ applesauce: Type) -> Void = { applesauce in
+    ...your code here...
+}
+lambda(applesauce)
 ```
 
-becomes:
+If this does not compile, go to step 4, Add return clause.
 
-```cpp hl_lines="1 3"
-auto Applesauce = [&]() {
-    // ...
-};  Applesauce();
+Otherwise, go to step 2, Move Lamda to Outer Scope.
+
+## 4.1 Add first return clause
+
+In this situation, when we added the variable, the compiler complained that we were mutating it.
+We are starting with:
+
+```swift
+let lambda: (_ applesauce: Type) -> Void = { applesauce in
+    ...your code here...
+}
+lambda(applesauce)
 ```
 
-Compile to make sure you didn't typo.
+Step 1: Allow input to be mutated
 
-## 3. Set the return type
+Swift does not allow input parameters to be mutated.
+Here, we are changing the input name and reassigning it to a `var` on the first line.
 
-Set the return type on the lambda, even if it's `void`. In Visual Studio, the IntelliSense tooltip over `auto` will tell you the type.
-
-```cpp
-auto Applesauce = [&]() -> SOMETYPE {
-    // ...
-};
+```swift
+let lambda: (_ applesauce: Type) -> Void = { applesauceIn in
+    var applesauce = appleSauceIn
+    ...your code here...
+}
+lambda(applesauce)
 ```
 
-Compile to make sure you got the return type correct.
+Step 2: Return and capture
+
+We are going to:
+
+1. Change the return type of the lambda from Void to Type
+1. Add a return statement at the end of the lambda
+1. Capture the return at the call site
+
+```swift
+let lambda: (_ applesauce: Type) -> Type = { applesauceIn in
+    var applesauce = appleSauceIn
+    ...your code here...
+    return applesauce
+}
+applesauce = lambda(applesauce)
+```
+
+## 4.2 Add second return clause
+
+In this situation, when we added the variable, the compiler complained that we were mutating it.
+We are starting with:
+
+```swift
+let lambda: (_ applesauce1In: Type1, _ applesauce2: Type2) -> Type1 = { applesauce1In, applesauce2 in
+    var applesauce1 = appleSauce1In
+    ...your code here...
+    return applesauce1
+}
+applesauce1 = lambda(applesauce1, applesauce2)
+```
+
+Step 1: Allow input to be mutated
+
+Swift does not allow input parameters to be mutated.
+Here, we are changing the input name and reassigning it to a `var` on the first line.
+
+```swift
+let lambda: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> Type1 = { applesauce1In, applesauce2In in
+    var applesauce1 = appleSauce1In
+    var applesauce2 = appleSauce2In
+    ...your code here...
+    return applesauce1
+}
+applesauce1 = lambda(applesauce1, applesauce2)
+```
+
+Step 2: Return and capture
+
+We are going to:
+
+1. Change the return type of the lambda from Type1 to a tuple of (Type1, Type2)
+1. Change the return to a tuple of both
+1. Capture and deconstruct return at the call site
+
+```swift
+let lambda: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> (Type1, Type2) = { applesauce1In, applesauce2In in
+    var applesauce1 = appleSauce1In
+    var applesauce2 = appleSauce2In
+    ...your code here...
+    return (applesauce1, applesauce2)
+}
+(applesauce1, applesauce2) = lambda(applesauce1, applesauce2)
+```
+
+
+
 
 ## 4. Capture explicitly
 
