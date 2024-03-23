@@ -73,7 +73,7 @@ Swift does not allow input parameters to be mutated.
 Here, we are changing the parameter name and reassigning it to a `var` on the first line.
 
 ```swift
-let closure: (_ applesauce: Type) -> Void = { applesauceIn in
+let closure: (_ applesauceIn: Type) -> Void = { applesauceIn in
     var applesauce = appleSauceIn
     // ...your code here
 }
@@ -89,7 +89,7 @@ We are going to:
 1. Capture the returned value at the call site
 
 ```swift
-let closure: (_ applesauce: Type) -> Type = { applesauceIn in
+let closure: (_ applesauceIn: Type) -> Type = { applesauceIn in
     var applesauce = appleSauceIn
     // ...your code here
     return applesauce
@@ -105,7 +105,7 @@ In this situation, when we added the variable, the compiler complained that we w
 We are starting with:
 
 ```swift
-let closure: (_ applesauce1: Type1, _ applesauce2: Type2) -> Type1 = { applesauce1In, applesauce2 in
+let closure: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> Type1 = { applesauce1In, applesauce2 in
     var applesauce1 = appleSauce1In
     // ...your code here
     return applesauce1
@@ -119,7 +119,7 @@ Swift does not allow input parameters to be mutated.
 Here, we are changing the input name and reassigning it to a `var` on the second line.
 
 ```swift
-let closure: (_ applesauce1: Type1, _ applesauce2: Type2) -> Type1 = { applesauce1In, applesauce2In in
+let closure: (_ applesauce1In: Type1, _ applesauce2In: Type2) -> Type1 = { applesauce1In, applesauce2In in
     var applesauce1 = appleSauce1In
     var applesauce2 = appleSauce2In
     // ...your code here
