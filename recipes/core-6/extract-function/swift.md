@@ -28,7 +28,10 @@ let closure: () -> Void = {
 closure()
 ```
 
-Compile.
+Compile. Possible errors:
+
+* `All statements inside a switch must be covered by a 'case' or 'default'`. You cannot place a closure at the top level of a `switch`. Back up and extract something different.
+* `break is only allowed inside a loop, if, do, or switch`. You have an early return. Back up and extract something different.
 
 ## 2. Move closure to outer scope
 
