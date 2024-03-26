@@ -6,17 +6,17 @@
 graph TD
     A(Start:\nExtract Function Refactoring) --> B[Introduce a closure]
     B --> C{Compiles?}
-    C --> |Yes| D[Move closure to\nouter scope]
-    C --> |No| E[Back up and extract\nsomething different]
+    C -- Yes --> D[Move closure to\nouter scope]
+    C -- No --> E[Back up and extract\nsomething different]
     E --> B
     D --> F{Compiles?}
-    F --> |Yes| L[Convert to function]
-    F --> |No| G[Notice first variable\nthat does not compile]
+    F -- Yes --> L[Convert to function]
+    F -- No --> G[Notice first variable\nthat does not compile]
     G --> H[Move closure back\nto inner scope]
     H --> I[Convert variable\nto parameter]
     I --> J{Compiles?}
-    J --> |Yes| D
-    J --> |No| K[Add return statement]
+    J -- Yes --> D
+    J -- No --> K[Add return statement]
     K --> D
     L --> M(End:\nCommit the Refactoring)
 
