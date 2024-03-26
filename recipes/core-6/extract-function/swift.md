@@ -3,22 +3,22 @@
 # Extract Function
 
 ```mermaid
-graph TD
-    A(Start:\nExtract Function Refactoring) --> B[Introduce a closure]
+flowchart TD
+    A(Start:<br/>Extract Function Refactoring) --> B[Introduce a closure]
     B --> C{Compiles?}
-    C -- Yes --> D[Move closure to\nouter scope]
-    C -- No --> E[Back up and extract\nsomething different]
+    C -- Yes --> D[Move closure to<br/>outer scope]
+    C -- No --> E[Back up and extract<br/>something different]
     E --> B
     D --> F{Compiles?}
     F -- Yes --> L[Convert to function]
-    F -- No --> G[Notice first variable\nthat does not compile]
-    G --> H[Move closure back\nto inner scope]
-    H --> I[Convert variable\nto parameter]
+    F -- No --> G[Notice first variable<br/>that does not compile]
+    G --> H[Move closure back<br/>to inner scope]
+    H --> I[Convert variable<br/>to parameter]
     I --> J{Compiles?}
     J -- Yes --> D
     J -- No --> K[Add return statement]
     K --> D
-    L --> M(End:\nCommit the Refactoring)
+    L --> M(End:<br/>Commit the Refactoring)
 
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style M fill:#f9f,stroke:#333,stroke-width:2px
